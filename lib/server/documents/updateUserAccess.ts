@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import { DOCUMENT_URL } from "../../../constants";
 import {
   Document,
@@ -8,7 +8,6 @@ import {
   RoomAccessLevels,
   UpdateUserAccessProps,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getUser } from "../database";
 import { getRoom, updateRoom } from "../liveblocks";
 import { notify } from "../notify";
@@ -25,20 +24,19 @@ import {
  * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
  * Do not allow if public access, or access granted through groupIds
  *
- * @param req
- * @param res
+ * @param session
+ * @param origin
  * @param documentId - The document's id
  * @param userId - The id of the user we're updating
  * @param access - The user's new document access level
  */
 export async function updateUserAccess(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
+  origin: string | undefined,
   { documentId, userId, access }: UpdateUserAccessProps
 ): Promise<FetchApiResult<DocumentUser[]>> {
-  // Get session, room, and user
-  const [session, room, user] = await Promise.all([
-    getServerSession(req, res),
+  // Get room, and user
+  const [room, user] = await Promise.all([
     getRoom({ roomId: documentId }),
     getUser(userId),
   ]);
@@ -139,7 +137,7 @@ export async function updateUserAccess(
 
   // Send email to user notifying that they've been added or their permission has been changed
   const updatedDocument: Document = buildDocument(updatedRoom);
-  const documentUrl = `${req.headers.origin}${DOCUMENT_URL(
+  const documentUrl = `${origin}${DOCUMENT_URL(
     updatedDocument.type,
     updatedDocument.id
   )}`;

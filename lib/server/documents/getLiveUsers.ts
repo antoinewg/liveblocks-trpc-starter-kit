@@ -1,10 +1,9 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   FetchApiResult,
   GetLiveUsersProps,
   LiveUsersResponse,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getActiveUsersInRooms } from "../liveblocks";
 
 /**
@@ -12,20 +11,15 @@ import { getActiveUsersInRooms } from "../liveblocks";
  * Select documents by posting an array of documentIds in the body
  * Only allow if authorized with NextAuth
  *
- * @param req
- * @param res
+ * @param session
  * @param documentIds - A list of document ids to select
  */
 export async function getLiveUsers(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentIds }: GetLiveUsersProps
 ): Promise<FetchApiResult<LiveUsersResponse[]>> {
-  // Get session and active users
-  const [session, activeUsers] = await Promise.all([
-    getServerSession(req, res),
-    getActiveUsersInRooms({ roomIds: documentIds }),
-  ]);
+  // Get active users
+  const activeUsers = await getActiveUsersInRooms({ roomIds: documentIds });
 
   // Check user is logged in
   if (!session) {

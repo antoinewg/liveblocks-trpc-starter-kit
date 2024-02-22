@@ -1,11 +1,10 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   Document,
   FetchApiResult,
   RoomAccess,
   UpdateDocumentProps,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getRoom, updateRoom } from "../liveblocks";
 import { buildDocument, userAllowedInRoom } from "../utils";
 
@@ -14,21 +13,16 @@ import { buildDocument, userAllowedInRoom } from "../utils";
  * Only allow if user has access to room (including logged-out users and public rooms).
  * Do not allow if public access, or access granted through groupIds
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document id
  * @param documentData - Data to update in the document
  */
 export async function updateDocument(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId, documentData }: UpdateDocumentProps
 ): Promise<FetchApiResult<Document>> {
   // Get session and room
-  const [session, room] = await Promise.all([
-    getServerSession(req, res),
-    getRoom({ roomId: documentId }),
-  ]);
+  const room = await getRoom({ roomId: documentId });
 
   // Check user is logged in
   if (!session) {

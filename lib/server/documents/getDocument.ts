@@ -1,11 +1,10 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   Document,
   FetchApiResult,
   GetDocumentProps,
   RoomAccess,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getRoom } from "../liveblocks";
 import { buildDocument, userAllowedInRoom } from "../utils";
 
@@ -13,20 +12,15 @@ import { buildDocument, userAllowedInRoom } from "../utils";
  * Get a document.
  * Only allow if user has access to room (including logged-out users and public rooms).
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document id
  */
 export async function getDocument(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId }: GetDocumentProps
 ): Promise<FetchApiResult<Document>> {
   // Get session and room
-  const [session, room] = await Promise.all([
-    getServerSession(req, res),
-    getRoom({ roomId: documentId }),
-  ]);
+  const room = await getRoom({ roomId: documentId });
 
   const { data, error } = room;
 

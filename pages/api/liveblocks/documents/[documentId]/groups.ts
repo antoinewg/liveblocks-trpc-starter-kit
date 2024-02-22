@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
   getDocumentGroups,
+  getServerSession,
   removeGroupAccess,
   updateGroupAccess,
 } from "../../../../../lib/server";
@@ -19,9 +20,7 @@ import { RemoveGroupRequest, UpdateGroupRequest } from "../../../../../types";
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
 
-  const { data, error } = await getDocumentGroups(req, res, {
-    documentId,
-  });
+  const { data, error } = await getDocumentGroups({ documentId });
 
   if (error) {
     return res.status(error.code ?? 500).json({ error });
@@ -48,7 +47,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { groupId, access }: UpdateGroupRequest = JSON.parse(req.body);
 
-  const { data, error } = await updateGroupAccess(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await updateGroupAccess(session, {
     documentId,
     groupId,
     access,
@@ -78,7 +78,8 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { groupId }: RemoveGroupRequest = JSON.parse(req.body);
 
-  const { data, error } = await removeGroupAccess(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await removeGroupAccess(session, {
     documentId,
     groupId,
   });

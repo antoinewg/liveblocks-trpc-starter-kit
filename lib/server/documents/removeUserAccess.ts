@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   DocumentUser,
   FetchApiResult,
@@ -6,7 +6,6 @@ import {
   RoomAccess,
   RoomAccessLevels,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getUser } from "../database";
 import { getRoom, updateRoom } from "../liveblocks";
 import {
@@ -20,19 +19,16 @@ import {
  * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
  * Do not allow if public access, or access granted through groupIds
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document's id
  * @param userId - The removed user's id
  */
 export async function removeUserAccess(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId, userId }: RemoveUserAccessProps
 ): Promise<FetchApiResult<DocumentUser[]>> {
-  // Get session, room, and user
-  const [session, room, user] = await Promise.all([
-    getServerSession(req, res),
+  // Get room, and user
+  const [room, user] = await Promise.all([
     getRoom({ roomId: documentId }),
     getUser(userId),
   ]);

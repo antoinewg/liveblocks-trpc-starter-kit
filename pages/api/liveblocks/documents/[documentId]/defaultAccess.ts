@@ -1,5 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { updateDefaultAccess } from "../../../../../lib/server";
+import {
+  getServerSession,
+  updateDefaultAccess,
+} from "../../../../../lib/server";
 import { UpdateDocumentScope } from "../../../../../types";
 
 /**
@@ -17,7 +20,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { access }: UpdateDocumentScope = JSON.parse(req.body);
 
-  const { data, error } = await updateDefaultAccess(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await updateDefaultAccess(session, {
     documentId,
     access,
   });

@@ -1,30 +1,24 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   DocumentUser,
   FetchApiResult,
   GetDocumentUsersProps,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getRoom } from "../liveblocks";
 import { buildDocumentUsers } from "../utils";
 
 /**
  * Get all collaborators in a given document.
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document's id
  */
 export async function getDocumentUsers(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId }: GetDocumentUsersProps
 ): Promise<FetchApiResult<DocumentUser[]>> {
-  // Get session and room
-  const [session, room] = await Promise.all([
-    getServerSession(req, res),
-    getRoom({ roomId: documentId }),
-  ]);
+  // Get room
+  const room = await getRoom({ roomId: documentId });
 
   // Get the room from documentId
   const { data, error } = room;

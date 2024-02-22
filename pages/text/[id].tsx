@@ -87,11 +87,8 @@ export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({
   query,
 }) => {
   const documentId = query.id as string;
-
-  const [document, session] = await Promise.all([
-    Server.getDocument(req, res, { documentId }),
-    Server.getServerSession(req, res),
-  ]);
+  const session = await Server.getServerSession(req, res);
+  const document = await Server.getDocument(session, { documentId });
 
   const { data = null, error = null } = document;
 

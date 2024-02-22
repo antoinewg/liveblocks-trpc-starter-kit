@@ -1,11 +1,10 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   GetDocumentsProps,
   GetDocumentsResponse,
   RoomAccess,
   RoomMetadata,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getRooms } from "../liveblocks";
 import {
   buildDocuments,
@@ -18,8 +17,7 @@ import {
  * Filter by sending userId, groupIds, or metadata in the query, otherwise return all.
  * Only allow if authorized with NextAuth and user has access to each room.
  *
- * @param req
- * @param res
+ * @param session
  * @param [userId] - Optional, filter to rooms with this userAccess set
  * @param [groupIds] - Optional, filter to rooms with these groupIds set (comma separated)
  * @param [documentType] - Optional, filter for this type of document e.g. "canvas"
@@ -27,8 +25,7 @@ import {
  * @param [limit] - Optional, the amount of documents to retrieve
  */
 export async function getDocuments(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { userId = "", groupIds = [], documentType, drafts, limit }: GetDocumentsProps
 ) {
   // Build getRooms arguments
@@ -61,10 +58,7 @@ export async function getDocuments(
   }
 
   // Get session and rooms
-  const [session, rooms] = await Promise.all([
-    getServerSession(req, res),
-    getRooms(getRoomsOptions),
-  ]);
+  const rooms = await getRooms(getRoomsOptions);
 
   // Check user is logged in
   if (!session) {
