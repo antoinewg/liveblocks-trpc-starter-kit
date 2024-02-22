@@ -1,19 +1,7 @@
-import { z } from "zod";
-import { procedure, router } from "../trpc";
+import { mergeRouters } from "../trpc";
+import { liveblocksRouter } from "./liveblocks";
 
-export const appRouter = router({
-  hello: procedure
-    .input(
-      z.object({
-        text: z.string(),
-      })
-    )
-    .query((opts) => {
-      return {
-        greeting: `hello ${opts.input.text}`,
-      };
-    }),
-});
+export const appRouter = mergeRouters(liveblocksRouter);
 
 // export type definition of API
 export type AppRouter = typeof appRouter;
