@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getLiveUsers } from "../../../../lib/server";
+import { getLiveUsers, getServerSession } from "../../../../lib/server";
 
 /**
  * POST Live Users - Used in /lib/client/getLiveUsers.ts
@@ -16,9 +16,8 @@ import { getLiveUsers } from "../../../../lib/server";
 async function POST(req: NextApiRequest, res: NextApiResponse) {
   const documentIds: string[] = JSON.parse(req.body);
 
-  const { data, error } = await getLiveUsers(req, res, {
-    documentIds,
-  });
+  const session = await getServerSession(req, res);
+  const { data, error } = await getLiveUsers(session, { documentIds });
 
   if (error) {
     return res.status(error.code ?? 500).json({ error });

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getDocuments } from "../../../../lib/server";
+import { getDocuments, getServerSession } from "../../../../lib/server";
 import { DocumentType } from "../../../../types";
 
 /**
@@ -26,7 +26,8 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 
   const groupIdsArray = groupIds ? groupIds.split(",") : [];
 
-  const { data, error } = await getDocuments(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await getDocuments(session, {
     userId: userId,
     groupIds: groupIdsArray,
     documentType: documentType,

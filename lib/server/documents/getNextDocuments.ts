@@ -1,12 +1,11 @@
 import { decode } from "base-64";
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   FetchApiResult,
   GetDocumentsResponse,
   GetNextDocumentsProps,
   RoomAccess,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getNextRoom } from "../liveblocks";
 import { buildDocuments, userAllowedInRooms } from "../utils";
 
@@ -16,20 +15,15 @@ import { buildDocuments, userAllowedInRooms } from "../utils";
  * That API is called on the client within /lib/client/getDocumentsByGroup.ts
  * Only allow if authorized with NextAuth and user has access to each room.
  *
- * @param req
- * @param res
+ * @param session
  * @param nextPage - String containing a URL to get the next set of rooms, returned from Liveblocks API
  */
 export async function getNextDocuments(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { nextPage }: GetNextDocumentsProps
 ): Promise<FetchApiResult<GetDocumentsResponse>> {
-  // Get session and next rooms
-  const [session, nextRooms] = await Promise.all([
-    getServerSession(req, res),
-    getNextRoom({ next: decode(nextPage) }),
-  ]);
+  // Get next rooms
+  const nextRooms = await getNextRoom({ next: decode(nextPage) });
 
   // Check user is logged in
   if (!session) {

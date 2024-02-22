@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   DocumentGroup,
   FetchApiResult,
@@ -6,7 +6,6 @@ import {
   RoomAccess,
   RoomAccessLevels,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getGroup } from "../database";
 import { getRoom, updateRoom } from "../liveblocks";
 import { buildDocumentGroups, userAllowedInRoom } from "../utils";
@@ -16,19 +15,16 @@ import { buildDocumentGroups, userAllowedInRoom } from "../utils";
  * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
  * Do not allow if public access, or access granted through groupIds
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document's id
  * @param groupId - The removed group's id
  */
 export async function removeGroupAccess(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId, groupId }: RemoveGroupAccessProps
 ): Promise<FetchApiResult<DocumentGroup[]>> {
-  // Get session, room, and group
-  const [session, room, group] = await Promise.all([
-    getServerSession(req, res),
+  // Get room, and group
+  const [room, group] = await Promise.all([
     getRoom({ roomId: documentId }),
     getGroup(groupId),
   ]);

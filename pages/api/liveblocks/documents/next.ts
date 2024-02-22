@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getNextDocuments } from "../../../../lib/server";
+import { getNextDocuments, getServerSession } from "../../../../lib/server";
 
 /**
  * GET Next - used in /lib/client/getNextDocuments.ts
@@ -16,9 +16,8 @@ import { getNextDocuments } from "../../../../lib/server";
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const nextPage = req.query.nextPage as string;
 
-  const { data, error } = await getNextDocuments(req, res, {
-    nextPage,
-  });
+  const session = await getServerSession(req, res);
+  const { data, error } = await getNextDocuments(session, { nextPage });
 
   if (error) {
     return res.status(error.code ?? 500).json({ error });

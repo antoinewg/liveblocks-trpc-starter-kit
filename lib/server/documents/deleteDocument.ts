@@ -1,5 +1,5 @@
-import { GetServerSidePropsContext } from "next";
-import { getRoom, getServerSession, userAllowedInRoom } from "../";
+import { Session } from "next-auth";
+import { getRoom, userAllowedInRoom } from "../";
 import {
   DeleteDocumentProps,
   Document,
@@ -16,19 +16,14 @@ import { deleteRoom } from "../liveblocks/deleteRoom";
  * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
  * Do not allow if public access, or access granted through groupIds
  *
+ * @param session
  * @param documentId - The document to delete
- * @param req
- * @param res
  */
 export async function deleteDocument(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId }: DeleteDocumentProps
 ): Promise<FetchApiResult<Document["id"]>> {
-  const [session, room] = await Promise.all([
-    getServerSession(req, res),
-    getRoom({ roomId: documentId }),
-  ]);
+  const room = await getRoom({ roomId: documentId });
 
   // Check user is logged in
   if (!session) {

@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-import { GetServerSidePropsContext } from "next";
-import { buildDocument, createRoom, getServerSession } from "../";
+import { Session } from "next-auth";
+import { buildDocument, createRoom } from "../";
 import {
   CreateDocumentProps,
   Document,
@@ -21,17 +21,11 @@ import { getDraftsGroupName } from "../utils";
  * @param userId - The user creating the document
  * @param [groupIds] - The new document's initial groups
  * @param [draft] - If the document is a draft (no public or group access, but can invite)
- * @param req
- * @param res
  */
 export async function createDocument(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { name, type, userId, groupIds, draft }: CreateDocumentProps
 ): Promise<FetchApiResult<Document>> {
-  // Check user is logged in
-  const session = await getServerSession(req, res);
-
   if (!session) {
     return {
       error: {

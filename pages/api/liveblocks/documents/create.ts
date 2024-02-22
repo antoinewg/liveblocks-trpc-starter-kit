@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createDocument } from "../../../../lib/server";
+import { createDocument, getServerSession } from "../../../../lib/server";
 import { CreateDocumentRequest } from "../../../../types";
 
 /**
@@ -21,7 +21,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { name, type, userId, groupIds, draft }: CreateDocumentRequest =
     JSON.parse(req.body);
 
-  const { data, error } = await createDocument(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await createDocument(session, {
     name: name,
     type: type,
     userId: userId,

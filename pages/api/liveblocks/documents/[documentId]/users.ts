@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
   getDocumentUsers,
+  getServerSession,
   removeUserAccess,
   updateUserAccess,
 } from "../../../../../lib/server";
@@ -19,9 +20,8 @@ import { RemoveUserRequest, UpdateUserRequest } from "../../../../../types";
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
 
-  const { data, error } = await getDocumentUsers(req, res, {
-    documentId,
-  });
+  const session = await getServerSession(req, res);
+  const { data, error } = await getDocumentUsers(session, { documentId });
 
   if (error) {
     return res.status(error.code ?? 500).json({ error });
@@ -48,7 +48,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { userId, access }: UpdateUserRequest = JSON.parse(req.body);
 
-  const { data, error } = await updateUserAccess(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await updateUserAccess(session, req.headers.origin, {
     documentId,
     userId,
     access,
@@ -78,7 +79,8 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { userId }: RemoveUserRequest = JSON.parse(req.body);
 
-  const { data, error } = await removeUserAccess(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await removeUserAccess(session, {
     documentId,
     userId,
   });

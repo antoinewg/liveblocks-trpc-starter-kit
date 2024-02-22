@@ -1,4 +1,3 @@
-import { GetServerSidePropsContext } from "next";
 import {
   DocumentGroup,
   FetchApiResult,
@@ -10,15 +9,11 @@ import { buildDocumentGroups } from "../utils";
 /**
  * Get all groups attached to a given document.
  *
- * @param req
- * @param res
  * @param documentId - The document's id
  */
-export async function getDocumentGroups(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
-  { documentId }: GetDocumentGroupsProps
-): Promise<FetchApiResult<DocumentGroup[]>> {
+export async function getDocumentGroups({
+  documentId,
+}: GetDocumentGroupsProps): Promise<FetchApiResult<DocumentGroup[]>> {
   // Get session and room
   const room = await getRoom({ roomId: documentId });
 

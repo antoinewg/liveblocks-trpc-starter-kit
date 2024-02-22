@@ -1,11 +1,10 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   Document,
   FetchApiResult,
   RoomAccess,
   UpdateDefaultAccessProps,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getRoom, updateRoom } from "../liveblocks";
 import {
   buildDocument,
@@ -18,21 +17,16 @@ import {
  *
  * Update the default access for a document to public or private
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document's id
  * @param access - The new default access: "public" or "private"
  */
 export async function updateDefaultAccess(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId, access }: UpdateDefaultAccessProps
 ): Promise<FetchApiResult<Document>> {
-  // Get session and room
-  const [session, room] = await Promise.all([
-    getServerSession(req, res),
-    getRoom({ roomId: documentId }),
-  ]);
+  // Get  room
+  const room = await getRoom({ roomId: documentId });
 
   // Check user is logged in
   if (!session) {

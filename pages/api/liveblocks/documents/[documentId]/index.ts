@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import {
   deleteDocument,
   getDocument,
+  getServerSession,
   updateDocument,
 } from "../../../../../lib/server";
 import { UpdateDocumentRequest } from "../../../../../types";
@@ -19,9 +20,8 @@ import { UpdateDocumentRequest } from "../../../../../types";
 async function GET(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
 
-  const { data, error } = await getDocument(req, res, {
-    documentId,
-  });
+  const session = await getServerSession(req, res);
+  const { data, error } = await getDocument(session, { documentId });
 
   if (error) {
     return res.status(error.code ?? 500).json({ error });
@@ -47,7 +47,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
   const { documentData }: UpdateDocumentRequest = JSON.parse(req.body);
 
-  const { data, error } = await updateDocument(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await updateDocument(session, {
     documentId,
     documentData,
   });
@@ -73,7 +74,8 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
 async function DELETE(req: NextApiRequest, res: NextApiResponse) {
   const documentId = req.query.documentId as string;
 
-  const { data, error } = await deleteDocument(req, res, {
+  const session = await getServerSession(req, res);
+  const { data, error } = await deleteDocument(session, {
     documentId,
   });
 

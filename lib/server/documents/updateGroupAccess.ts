@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from "next";
+import { Session } from "next-auth";
 import {
   DocumentGroup,
   FetchApiResult,
@@ -7,7 +7,6 @@ import {
   RoomAccesses,
   UpdateGroupAccessProps,
 } from "../../../types";
-import { getServerSession } from "../auth";
 import { getGroup } from "../database";
 import { getRoom, updateRoom } from "../liveblocks";
 import {
@@ -22,20 +21,17 @@ import {
  * Only allow if authorized with NextAuth and if user is added as a userId on usersAccesses
  * Do not allow if public access, or access granted through groupIds
  *
- * @param req
- * @param res
+ * @param session
  * @param documentId - The document's id
  * @param groupId - The edit group's id
  * @param access - The invited user's new document access
  */
 export async function updateGroupAccess(
-  req: GetServerSidePropsContext["req"],
-  res: GetServerSidePropsContext["res"],
+  session: Session,
   { documentId, groupId, access }: UpdateGroupAccessProps
 ): Promise<FetchApiResult<DocumentGroup[]>> {
-  // Get session and room
-  const [session, room, group] = await Promise.all([
-    getServerSession(req, res),
+  // Get room
+  const [room, group] = await Promise.all([
     getRoom({ roomId: documentId }),
     getGroup(groupId),
   ]);
