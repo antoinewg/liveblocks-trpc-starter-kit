@@ -193,4 +193,18 @@ export const liveblocksRouter = router({
       }
       return data;
     }),
+
+  updateDocument: procedure
+    .input(z.object({ documentId: z.string(), name: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data, error } = await Server.updateDocument(ctx.session, {
+        documentId: input.documentId,
+        documentData: { metadata: { name: input.name } },
+      });
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
 });

@@ -7,7 +7,7 @@ import {
 import { Whiteboard } from "../../components/Whiteboard";
 import { DocumentLayout } from "../../layouts/Document";
 import { ErrorLayout } from "../../layouts/Error";
-import { InitialDocumentProvider, updateDocumentName } from "../../lib/client";
+import { InitialDocumentProvider } from "../../lib/client";
 import { RoomProvider } from "../../liveblocks.config";
 import { trpc } from "../../utils/trpc";
 
@@ -15,21 +15,9 @@ export default function WhiteboardDocumentView() {
   const router = useRouter();
   const documentId = router.query.id as string;
   const { data, refetch } = trpc.getDocument.useQuery({ documentId });
-
-  // Update document with new name
-  async function updateName(name: string) {
-    if (!document) {
-      return;
-    }
-
-    const { error } = await updateDocumentName({ documentId, name });
-
-    if (error) {
-      return;
-    }
-
-    refetch();
-  }
+  const { mutate: updateDocument } = trpc.updateDocument.useMutation({
+    onSuccess: () => refetch(),
+  });
 
   if (!data) {
     return <DocumentLayout header={<DocumentHeaderSkeleton />} />;
@@ -51,7 +39,11 @@ export default function WhiteboardDocumentView() {
     >
       <InitialDocumentProvider initialDocument={data.data}>
         <DocumentLayout
-          header={<DocumentHeader onDocumentRename={updateName} />}
+          header={
+            <DocumentHeader
+              onDocumentRename={(name) => updateDocument({ documentId, name })}
+            />
+          }
         >
           <Whiteboard />
         </DocumentLayout>
