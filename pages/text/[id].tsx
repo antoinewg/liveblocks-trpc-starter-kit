@@ -1,8 +1,5 @@
 import { LiveMap } from "@liveblocks/client";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
-import { Session } from "next-auth";
-import { useEffect, useState } from "react";
 import {
   DocumentHeader,
   DocumentHeaderSkeleton,
@@ -10,62 +7,43 @@ import {
 import { TextEditor } from "../../components/TextEditor/TextEditor";
 import { DocumentLayout } from "../../layouts/Document";
 import { ErrorLayout } from "../../layouts/Error";
-import { InitialDocumentProvider, updateDocumentName } from "../../lib/client";
-import * as Server from "../../lib/server";
+import { InitialDocumentProvider } from "../../lib/client";
 import { RoomProvider } from "../../liveblocks.config";
-import { Document, ErrorData } from "../../types";
+import { trpc } from "../../utils/trpc";
 
-export default function TextDocumentView({
-  initialDocument,
-  initialError,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function TextDocumentView() {
   const router = useRouter();
-  const { id, error: queryError } = router.query;
-  const [document, setDocument] = useState<Document | null>(initialDocument);
-  const [error, setError] = useState<ErrorData | null>(initialError);
+  const documentId = router.query.id as string;
+  const { data, refetch } = trpc.getDocument.useQuery({ documentId });
+  const { mutate: updateDocument } = trpc.updateDocument.useMutation({
+    onSuccess: () => refetch(),
+  });
 
-  // Update document with new name
-  async function updateName(name: string) {
-    if (!document) {
-      return;
-    }
-
-    const { data, error } = await updateDocumentName({
-      documentId: document.id,
-      name: name,
-    });
-
-    if (error) {
-      return;
-    }
-
-    setDocument(data);
+  if (!data) {
+    return <DocumentLayout header={<DocumentHeaderSkeleton />} />;
   }
 
-  // If error object in params, retrieve it
-  useEffect(() => {
-    if (queryError) {
-      setError(JSON.parse(decodeURIComponent(queryError as string)));
-    }
-  }, [queryError]);
-
-  if (error) {
-    return <ErrorLayout error={error} />;
+  if (data && "error" in data) {
+    return <ErrorLayout error={data.error} />;
   }
 
-  if (!document) {
+  if (!data.data) {
     return <DocumentLayout header={<DocumentHeaderSkeleton />} />;
   }
 
   return (
     <RoomProvider
-      id={id as string}
+      id={documentId}
       initialPresence={{ cursor: null }}
       initialStorage={{ notes: new LiveMap() }}
     >
-      <InitialDocumentProvider initialDocument={document}>
+      <InitialDocumentProvider initialDocument={data.data}>
         <DocumentLayout
-          header={<DocumentHeader onDocumentRename={updateName} />}
+          header={
+            <DocumentHeader
+              onDocumentRename={(name) => updateDocument({ documentId, name })}
+            />
+          }
         >
           <TextEditor />
         </DocumentLayout>
@@ -73,30 +51,3 @@ export default function TextDocumentView({
     </RoomProvider>
   );
 }
-
-interface ServerSideProps {
-  initialDocument: Document | null;
-  initialError: ErrorData | null;
-  session: Session | null;
-}
-
-// Authenticate on server and retrieve the current document
-export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({
-  req,
-  res,
-  query,
-}) => {
-  const documentId = query.id as string;
-  const session = await Server.getServerSession(req, res);
-  const document = await Server.getDocument(session, { documentId });
-
-  const { data = null, error = null } = document;
-
-  return {
-    props: {
-      initialDocument: data,
-      initialError: error,
-      session: session,
-    },
-  };
-};

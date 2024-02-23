@@ -1,7 +1,7 @@
 import { ComponentProps } from "react";
-import { deleteDocument } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Dialog } from "../../primitives/Dialog";
+import { trpc } from "../../utils/trpc";
 import styles from "./DocumentDeleteDialog.module.css";
 
 interface Props
@@ -17,22 +17,12 @@ export function DocumentDeleteDialog({
   children,
   ...props
 }: Props) {
-  async function handleDeleteDocument() {
-    if (!documentId) {
-      return;
-    }
-
-    const { error } = await deleteDocument({
-      documentId,
-    });
-
-    onOpenChange(false);
-    onDeleteDocument();
-
-    if (error) {
-      return;
-    }
-  }
+  const { mutate: deleteDocument } = trpc.deleteDocument.useMutation({
+    onSuccess: () => {
+      onOpenChange(false);
+      onDeleteDocument();
+    },
+  });
 
   return (
     <Dialog
@@ -45,7 +35,10 @@ export function DocumentDeleteDialog({
             <Button onClick={() => onOpenChange(false)} variant="secondary">
               Cancel
             </Button>
-            <Button onClick={handleDeleteDocument} variant="destructive">
+            <Button
+              onClick={() => deleteDocument({ documentId })}
+              variant="destructive"
+            >
               Delete
             </Button>
           </div>

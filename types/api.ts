@@ -1,15 +1,5 @@
-import {
-  Document,
-  DocumentAccess,
-  DocumentGroup,
-  DocumentType,
-  DocumentUser,
-} from "./document";
+import { Document } from "./document";
 import { Room, RoomActiveUser } from "./room";
-
-/**
- * These types are used to unify the client/server API endpoints
- */
 
 export type GetDocumentsResponse = {
   documents: Document[];
@@ -17,40 +7,6 @@ export type GetDocumentsResponse = {
 };
 
 export type GetStorageResponse = Record<string, unknown>;
-
-export type CreateDocumentRequest = {
-  name: Document["name"];
-  type: DocumentType;
-  userId: DocumentUser["id"];
-  groupIds?: string; // Comma separated list of groupIds
-  draft?: boolean;
-};
-
-export type UpdateDocumentRequest = {
-  documentData: Partial<Room>;
-};
-
-export type UpdateDocumentScope = {
-  access: DocumentAccess;
-};
-
-export type UpdateGroupRequest = {
-  groupId: DocumentGroup["id"];
-  access: DocumentAccess;
-};
-
-export type RemoveGroupRequest = {
-  groupId: DocumentGroup["id"];
-};
-
-export type UpdateUserRequest = {
-  userId: DocumentUser["id"];
-  access: DocumentAccess;
-};
-
-export type RemoveUserRequest = {
-  userId: DocumentUser["id"];
-};
 
 export type GetRoomsResponse = {
   nextPage: string | null;

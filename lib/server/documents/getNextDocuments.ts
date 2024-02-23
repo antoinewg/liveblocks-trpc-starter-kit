@@ -1,4 +1,3 @@
-import { decode } from "base-64";
 import { Session } from "next-auth";
 import {
   FetchApiResult,
@@ -23,7 +22,7 @@ export async function getNextDocuments(
   { nextPage }: GetNextDocumentsProps
 ): Promise<FetchApiResult<GetDocumentsResponse>> {
   // Get next rooms
-  const nextRooms = await getNextRoom({ next: decode(nextPage) });
+  const nextRooms = await getNextRoom({ next: nextPage });
 
   // Check user is logged in
   if (!session) {

@@ -38,6 +38,9 @@ dependencies:
   '@tanstack/react-query':
     specifier: ^5.22.2
     version: 5.22.2(react@18.2.0)
+  '@tiptap/core':
+    specifier: ^2.2.3
+    version: 2.2.3(@tiptap/pm@2.2.3)
   '@tiptap/extension-character-count':
     specifier: ^2.0.4
     version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
@@ -113,15 +116,15 @@ dependencies:
   next-auth:
     specifier: ^4.20.1
     version: 4.24.6(next@13.5.6)(react-dom@18.2.0)(react@18.2.0)
+  prosemirror-view:
+    specifier: ^1.33.1
+    version: 1.33.1
   react:
     specifier: ^18.2.0
     version: 18.2.0
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
-  swr:
-    specifier: ^1.3.0
-    version: 1.3.0(react@18.2.0)
   yjs:
     specifier: ^13.6.7
     version: 13.6.12
@@ -4288,14 +4291,6 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
     dev: true
-
-  /swr@1.3.0(react@18.2.0):
-    resolution: {integrity: sha512-dkghQrOl2ORX9HYrMDtPa7LTVHJjCTeZoB1dqTbnnEDlSvN8JEKpYIYurDfvbQFUUS8Cg8PceFVZNkW0KNNYPw==}
-    peerDependencies:
-      react: ^16.11.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      react: 18.2.0
-    dev: false
 
   /synckit@0.8.8:
     resolution: {integrity: sha512-HwOKAP7Wc5aRGYdKH+dw0PRRpbO841v2DENBtjnR5HFWoiNByAl7vrx3p0G/rCyYXQsrxqtX48TImFtPcIHSpQ==}

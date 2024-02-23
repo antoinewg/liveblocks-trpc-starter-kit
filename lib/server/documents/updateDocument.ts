@@ -19,7 +19,7 @@ import { buildDocument, userAllowedInRoom } from "../utils";
  */
 export async function updateDocument(
   session: Session,
-  { documentId, documentData }: UpdateDocumentProps
+  { documentId, name }: UpdateDocumentProps
 ): Promise<FetchApiResult<Document>> {
   // Get session and room
   const room = await getRoom({ roomId: documentId });
@@ -71,6 +71,7 @@ export async function updateDocument(
   }
 
   // If successful, update room with new data
+  const documentData = { metadata: { name } } as Record<string, unknown>;
   const { data: updatedRoomData, error: updatedRoomError } = await updateRoom({
     ...documentData,
     roomId: documentId,

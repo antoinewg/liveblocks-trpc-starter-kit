@@ -7,7 +7,6 @@ import {
 } from "../../components/Documents";
 import { DocumentRowGroup } from "../../components/Documents/DocumentRowGroup";
 import { PlusIcon } from "../../icons";
-import { usePaginatedDocumentsSWR } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Container } from "../../primitives/Container";
 import { Select } from "../../primitives/Select";
@@ -19,10 +18,11 @@ import {
   Group,
 } from "../../types";
 import { capitalize } from "../../utils";
+import { trpc } from "../../utils/trpc";
 import styles from "./Documents.module.css";
 
 // Load `x` documents at a time
-const DOCUMENT_LOAD_LIMIT = 10;
+const DOCUMENT_LOAD_LIMIT = 2;
 
 interface Props extends ComponentProps<"div"> {
   filter?: "all" | "drafts" | "group";
@@ -39,7 +39,7 @@ export function DocumentsLayout({
   const [documentType, setDocumentType] = useState<DocumentType | "all">("all");
 
   // Return `getDocuments` params for the current filters/group
-  const getDocumentsOptions: GetDocumentsProps | null = useMemo(() => {
+  const documentsOptions: GetDocumentsProps | null = useMemo(() => {
     if (!session) {
       return null;
     }
@@ -78,21 +78,22 @@ export function DocumentsLayout({
   // When session is found, find pages of documents with the above document options
   const {
     data,
-    // error,
-    // isValidating,
-    size,
-    setSize,
-    mutate: revalidateDocuments,
-    isLoadingInitialData,
-    isLoadingMore,
-    isEmpty,
-    isReachingEnd,
-    // isRefreshing,
-  } = usePaginatedDocumentsSWR(getDocumentsOptions, {
-    refreshInterval: 10000,
+    refetch: revalidateDocuments,
+    hasNextPage,
+    error,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = trpc.getPaginatedDocuments.useInfiniteQuery(documentsOptions!, {
+    refetchInterval: 10000,
+    enabled: !!documentsOptions,
+    initialCursor: null,
+    getNextPageParam: (lastPage) =>
+      "nextPage" in lastPage ? (lastPage.nextPage as string) : null,
   });
 
-  const documentsPages: GetDocumentsResponse[] = data ?? [];
+  const documentsPages: GetDocumentsResponse[] = data?.pages ?? [];
+  const isEmpty = data?.pages[0]?.documents.length === 0;
+  const isLoadingInitialData = !data && !error;
 
   if (!session) {
     return (
@@ -164,14 +165,14 @@ export function DocumentsLayout({
                   revalidateDocuments={revalidateDocuments}
                 />
               ))}
-              {!isReachingEnd ? (
+              {hasNextPage ? (
                 <div className={styles.actions}>
                   <Button
-                    disabled={isLoadingMore}
-                    onClick={() => setSize(size + 1)}
-                    icon={isLoadingMore ? <Spinner /> : null}
+                    disabled={isFetchingNextPage}
+                    onClick={() => fetchNextPage()}
+                    icon={isFetchingNextPage ? <Spinner /> : null}
                   >
-                    {isLoadingMore ? "Loading…" : "Show more"}
+                    {isFetchingNextPage ? "Loading…" : "Show more"}
                   </Button>
                 </div>
               ) : null}
