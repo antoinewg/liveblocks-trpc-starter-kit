@@ -1,34 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
-  getDocumentUsers,
   getServerSession,
   removeUserAccess,
   updateUserAccess,
 } from "../../../../../lib/server";
 import { RemoveUserRequest, UpdateUserRequest } from "../../../../../types";
-
-/**
- * GET Users - Used in /lib/client/getDocumentUsers.ts
- *
- * Get all collaborators in a given document.
- * Only allow if authorized with NextAuth and user has access to room.
- *
- * @param req
- * @param req.query.documentId - The document's id
- * @param res
- */
-async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const documentId = req.query.documentId as string;
-
-  const session = await getServerSession(req, res);
-  const { data, error } = await getDocumentUsers(session, { documentId });
-
-  if (error) {
-    return res.status(error.code ?? 500).json({ error });
-  }
-
-  return res.status(200).json(data);
-}
 
 /**
  * POST Users - User in /lib/client/updateUserAccess.ts
@@ -94,8 +70,6 @@ async function PATCH(req: NextApiRequest, res: NextApiResponse) {
 
 export default async function users(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
-    case "GET":
-      return await GET(req, res);
     case "POST":
       return await POST(req, res);
     case "PATCH":

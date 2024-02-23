@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { getDocument, getGroups } from "../../../lib/server";
+import {
+  getDocument,
+  getDocumentGroups,
+  getDocumentUsers,
+  getGroups,
+} from "../../../lib/server";
 import { procedure, router } from "../trpc";
 
 export const liveblocksRouter = router({
@@ -12,4 +17,12 @@ export const liveblocksRouter = router({
     .query(({ ctx, input }) =>
       getGroups(input?.groupIds ?? ctx.session.user.info.groupIds ?? [])
     ),
+
+  getDocumentGroups: procedure
+    .input(z.object({ documentId: z.string() }))
+    .query(({ input }) => getDocumentGroups(input)),
+
+  getDocumentUsers: procedure
+    .input(z.object({ documentId: z.string() }))
+    .query(({ ctx, input }) => getDocumentUsers(ctx.session, input)),
 });

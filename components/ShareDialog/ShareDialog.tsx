@@ -3,17 +3,11 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { ComponentProps, useCallback, useEffect, useState } from "react";
 import { UserIcon, UsersIcon } from "../../icons";
-import {
-  getDocument,
-  getDocumentAccess,
-  getDocumentGroups,
-  getDocumentUsers,
-  useDocumentsFunctionSWR,
-  useInitialDocument,
-} from "../../lib/client";
+import { getDocumentAccess, useInitialDocument } from "../../lib/client";
 import { useBroadcastEvent, useEventListener } from "../../liveblocks.config";
 import { Dialog } from "../../primitives/Dialog";
 import { DocumentAccess } from "../../types";
+import { trpc } from "../../utils/trpc";
 import { ShareDialogDefault } from "./ShareDialogDefault";
 import { ShareDialogGroups } from "./ShareDialogGroups";
 import { ShareDialogInviteGroup } from "./ShareDialogInviteGroup";
@@ -33,31 +27,23 @@ export function ShareDialog({ children, ...props }: Props) {
   );
 
   // Get a list of users attached to the document (+ their info)
-  const {
-    data: users,
-    error: usersError,
-    mutate: revalidateUsers,
-  } = useDocumentsFunctionSWR([getDocumentUsers, { documentId }], {
-    refreshInterval: 0,
-  });
+  const { data: usersData, refetch: revalidateUsers } =
+    trpc.getDocumentUsers.useQuery({ documentId }, { refetchInterval: 0 });
+  const users = usersData && "data" in usersData ? usersData.data : undefined;
 
   // Get a list of groups attached to the document (+ their info)
-  const {
-    data: groups,
-    error: groupsError,
-    mutate: revalidateGroups,
-  } = useDocumentsFunctionSWR([getDocumentGroups, { documentId }], {
-    refreshInterval: 0,
-  });
+  const { data: groupsData, refetch: revalidateGroups } =
+    trpc.getDocumentGroups.useQuery({ documentId }, { refetchInterval: 0 });
+  const groups =
+    groupsData && "data" in groupsData ? groupsData.data : undefined;
 
   // Get the current document
-  const {
-    data: document,
-    error: defaultAccessError,
-    mutate: revalidateDefaultAccess,
-  } = useDocumentsFunctionSWR([getDocument, { documentId }], {
-    refreshInterval: 0,
-  });
+  const { data, refetch: revalidateDefaultAccess } = trpc.getDocument.useQuery(
+    { documentId },
+    { refetchInterval: 0 }
+  );
+  const document = data && "data" in data ? data.data : undefined;
+  const defaultAccessError = data && "error" in data ? data.error : undefined;
 
   // Get default access value from document, or the default value from the property
   const defaultAccess = document

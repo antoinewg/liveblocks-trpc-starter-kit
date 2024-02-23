@@ -1,33 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
-  getDocumentGroups,
   getServerSession,
   removeGroupAccess,
   updateGroupAccess,
 } from "../../../../../lib/server";
 import { RemoveGroupRequest, UpdateGroupRequest } from "../../../../../types";
-
-/**
- * GET Groups - Used in /lib/client/getDocumentGroups.ts
- *
- * Get all groups attached to a given document.
- * Only allow if authorized with NextAuth and user has access to room.
- *
- * @param req
- * @param req.query.documentId - The document's id
- * @param res
- */
-async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const documentId = req.query.documentId as string;
-
-  const { data, error } = await getDocumentGroups({ documentId });
-
-  if (error) {
-    return res.status(error.code ?? 500).json({ error });
-  }
-
-  return res.status(200).json(data);
-}
 
 /**
  * POST Groups - User in /lib/client/updateGroupAccess.ts
@@ -96,8 +73,6 @@ export default async function groups(
   res: NextApiResponse
 ) {
   switch (req.method) {
-    case "GET":
-      return await GET(req, res);
     case "POST":
       return await POST(req, res);
     case "PATCH":
