@@ -2,7 +2,7 @@
 
 https://user-images.githubusercontent.com/33033422/216776250-04ef297b-f61a-42ec-a7b9-b08e46dddf8f.mp4
 
-# [Next.js Starter Kit](https://liveblocks.io/starter-kit)
+# [Next.js Starter Kit with tRPC](https://liveblocks.io/starter-kit)
 
 <p>
   <a href="https://codesandbox.io/s/github/liveblocks/liveblocks/tree/main/starter-kits/nextjs-starter-kit">
@@ -25,3 +25,15 @@ Kickstart start your collaborative Next.js app with this starter kit.
 
 [Read the guide](http://liveblocks.io/docs/guides/nextjs-starter-kit) to get
 started.
+
+## Source
+
+This is an extension of the liveblocks [starter kit](https://liveblocks.io/starter-kit) for next.js, with tRPC for simple code.
+
+[tRPC](https://trpc.io/) provides a better DX by having end-to-end type safety.
+
+See this [PR](https://github.com/antoinewg/liveblocks-trpc-starter-kit/pull/3) to see the full migration process.
+
+## Roadmap
+
+- [ ] replaces call to `fetchLiveblocksApi` and use `@liveblocks/node` client and types directly
