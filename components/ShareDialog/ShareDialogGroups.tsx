@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { ComponentProps } from "react";
-import { updateGroupAccess } from "../../lib/client";
 import { Select } from "../../primitives/Select";
 import { Document, DocumentAccess, DocumentGroup } from "../../types";
 import { trpc } from "../../utils/trpc";
@@ -24,24 +23,9 @@ export function ShareDialogGroups({
   const { mutate: removeGroupAccess } = trpc.removeGroupAccess.useMutation({
     onSuccess: () => onSetGroups(),
   });
-
-  // Update a collaborator in the room using email as user id
-  async function handleUpdateDocumentGroup(
-    id: DocumentGroup["id"],
-    access: DocumentAccess
-  ) {
-    const { data, error } = await updateGroupAccess({
-      groupId: id,
-      documentId: documentId,
-      access: access,
-    });
-
-    if (error || !data) {
-      return;
-    }
-
-    onSetGroups();
-  }
+  const { mutate: updateGroupAccess } = trpc.updateGroupAccess.useMutation({
+    onSuccess: () => onSetGroups(),
+  });
 
   return (
     <div className={clsx(className, styles.rows)} {...props}>
@@ -79,9 +63,13 @@ export function ShareDialogGroups({
                       description: "Group can only read the document",
                     },
                   ]}
-                  onChange={(value) => {
-                    handleUpdateDocumentGroup(id, value as DocumentAccess);
-                  }}
+                  onChange={(value) =>
+                    updateGroupAccess({
+                      groupId: id,
+                      documentId,
+                      access: value as DocumentAccess,
+                    })
+                  }
                   value={access}
                 />
               </div>

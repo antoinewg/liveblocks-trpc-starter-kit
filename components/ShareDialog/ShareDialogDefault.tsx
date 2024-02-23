@@ -1,18 +1,12 @@
 import clsx from "clsx";
-import {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ComponentProps, useCallback, useRef, useState } from "react";
 import { CheckIcon, CopyIcon, EditIcon, LinkIcon } from "../../icons";
-import { updateDefaultAccess } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Checkbox } from "../../primitives/Checkbox";
 import { Input } from "../../primitives/Input";
 import { Spinner } from "../../primitives/Spinner";
 import { Document, DocumentAccess } from "../../types";
+import { trpc } from "../../utils/trpc";
 import styles from "./ShareDialogDefault.module.css";
 
 interface Props extends ComponentProps<"div"> {
@@ -34,60 +28,34 @@ export function ShareDialogDefault({
 }: Props) {
   const shareInputRef = useRef<HTMLInputElement>(null);
   const [copiedToClipboard, setCopiedToClipboard] = useState(false);
-  const [publicRead, setPublicRead] = useState(false);
+  const publicRead = defaultAccess !== DocumentAccess.NONE;
   const [isPublicReadLoading, setPublicReadLoading] = useState(false);
-  const [publicEdit, setPublicEdit] = useState(false);
+  const publicEdit = defaultAccess === DocumentAccess.EDIT;
   const [isPublicEditLoading, setPublicEditLoading] = useState(false);
+
+  const updateDefaultAccess = trpc.updateDefaultAccess.useMutation({
+    onSuccess: () => onSetDefaultAccess(),
+  });
 
   // Toggle between public accesses: READONLY/NONE
   async function handlePublicRead(newPublicRead: boolean) {
     setPublicReadLoading(true);
-
-    const accessValue = newPublicRead
-      ? DocumentAccess.READONLY
-      : DocumentAccess.NONE;
-
-    const { data, error } = await updateDefaultAccess({
+    await updateDefaultAccess.mutateAsync({
       documentId: documentId,
-      access: accessValue,
+      access: newPublicRead ? DocumentAccess.READONLY : DocumentAccess.NONE,
     });
-
-    if (error || !data) {
-      return;
-    }
-
-    setPublicRead(newPublicRead);
     setPublicReadLoading(false);
-    onSetDefaultAccess();
   }
 
   // Toggle between public accesses: EDIT/READONLY
   async function handlePublicEdit(newPublicEdit: boolean) {
     setPublicEditLoading(true);
-
-    const accessValue = newPublicEdit
-      ? DocumentAccess.EDIT
-      : DocumentAccess.READONLY;
-
-    const { data, error } = await updateDefaultAccess({
+    await updateDefaultAccess.mutateAsync({
       documentId: documentId,
-      access: accessValue,
+      access: newPublicEdit ? DocumentAccess.EDIT : DocumentAccess.READONLY,
     });
-
-    if (error || !data) {
-      return;
-    }
-
-    setPublicEdit(newPublicEdit);
     setPublicEditLoading(false);
-    onSetDefaultAccess();
   }
-
-  // When default access change by another, update UI
-  useEffect(() => {
-    setPublicRead(defaultAccess !== DocumentAccess.NONE);
-    setPublicEdit(defaultAccess === DocumentAccess.EDIT);
-  }, [defaultAccess]);
 
   const handleCopyToClipboard = useCallback(async () => {
     if (!shareInputRef.current) return;

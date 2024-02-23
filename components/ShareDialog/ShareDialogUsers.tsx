@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { ComponentProps } from "react";
-import { updateUserAccess } from "../../lib/client";
 import { Avatar } from "../../primitives/Avatar";
 import { Select } from "../../primitives/Select";
 import { Document, DocumentAccess, DocumentUser } from "../../types";
@@ -27,24 +26,9 @@ export function ShareDialogUsers({
   const { mutate: removeUserAccess } = trpc.removeUserAccess.useMutation({
     onSuccess: () => onSetUsers(),
   });
-
-  // Update a collaborator in the room using email as user id
-  async function handleUpdateDocumentUser(
-    id: DocumentUser["id"],
-    access: DocumentAccess
-  ) {
-    const { data, error } = await updateUserAccess({
-      userId: id,
-      documentId: documentId,
-      access: access,
-    });
-
-    if (error || !data) {
-      return;
-    }
-
-    onSetUsers();
-  }
+  const { mutate: updateUserAccess } = trpc.updateUserAccess.useMutation({
+    onSuccess: () => onSetUsers(),
+  });
 
   return (
     <div className={clsx(className, styles.rows)} {...props}>
@@ -100,9 +84,13 @@ export function ShareDialogUsers({
                       description: "User can only read the document",
                     },
                   ]}
-                  onChange={(value) => {
-                    handleUpdateDocumentUser(id, value as DocumentAccess);
-                  }}
+                  onChange={(value) =>
+                    updateUserAccess({
+                      userId: id,
+                      documentId,
+                      access: value as DocumentAccess,
+                    })
+                  }
                   value={access}
                 />
               </div>

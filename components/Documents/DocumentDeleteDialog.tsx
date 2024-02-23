@@ -17,18 +17,12 @@ export function DocumentDeleteDialog({
   children,
   ...props
 }: Props) {
-  const { mutateAsync: deleteDocument } = trpc.deleteDocument.useMutation();
-
-  async function handleDeleteDocument() {
-    if (!documentId) {
-      return;
-    }
-
-    await deleteDocument({ documentId });
-
-    onOpenChange(false);
-    onDeleteDocument();
-  }
+  const { mutate: deleteDocument } = trpc.deleteDocument.useMutation({
+    onSuccess: () => {
+      onOpenChange(false);
+      onDeleteDocument();
+    },
+  });
 
   return (
     <Dialog
@@ -41,7 +35,10 @@ export function DocumentDeleteDialog({
             <Button onClick={() => onOpenChange(false)} variant="secondary">
               Cancel
             </Button>
-            <Button onClick={handleDeleteDocument} variant="destructive">
+            <Button
+              onClick={() => deleteDocument({ documentId })}
+              variant="destructive"
+            >
               Delete
             </Button>
           </div>

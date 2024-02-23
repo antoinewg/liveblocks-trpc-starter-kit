@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import { useSession } from "next-auth/react";
-import { ComponentProps, FormEvent, useState } from "react";
+import { ComponentProps, FormEvent } from "react";
 import { PlusIcon } from "../../icons";
-import { updateGroupAccess } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Select } from "../../primitives/Select";
 import { Spinner } from "../../primitives/Spinner";
-import { Document, DocumentAccess, DocumentGroup, Group } from "../../types";
+import { Document, DocumentAccess, Group } from "../../types";
 import { capitalize } from "../../utils";
+import { trpc } from "../../utils/trpc";
 import styles from "./ShareDialogInvite.module.css";
 
 interface Props extends ComponentProps<"div"> {
@@ -26,30 +26,9 @@ export function ShareDialogInviteGroup({
   ...props
 }: Props) {
   const { data: session } = useSession();
-
-  const [isInviteLoading, setInviteLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
-
-  // Add a group to the room
-  async function handleAddDocumentGroup(id: DocumentGroup["id"]) {
-    setErrorMessage(undefined);
-    setInviteLoading(true);
-
-    const { error } = await updateGroupAccess({
-      groupId: id,
-      documentId: documentId,
-      access: DocumentAccess.READONLY,
-    });
-
-    setInviteLoading(false);
-
-    if (error) {
-      setErrorMessage(error?.suggestion);
-      return;
-    }
-
-    onSetGroups();
-  }
+  const updateGroupAccess = trpc.updateGroupAccess.useMutation({
+    onSuccess: () => onSetGroups(),
+  });
 
   const invitableGroupIds = (session?.user.info.groupIds ?? []).filter(
     (groupId) => currentGroups.every((group) => group.id !== groupId)
@@ -67,7 +46,11 @@ export function ShareDialogInviteGroup({
                 const id = new FormData(e.currentTarget).get(
                   "groupId"
                 ) as string;
-                handleAddDocumentGroup(id);
+                updateGroupAccess.mutate({
+                  groupId: id,
+                  documentId: documentId,
+                  access: DocumentAccess.READONLY,
+                });
               }}
             >
               <Select
@@ -81,12 +64,12 @@ export function ShareDialogInviteGroup({
                 }))}
                 placeholder="Choose a group…"
                 required
-                disabled={isInviteLoading}
+                disabled={updateGroupAccess.isPending}
               />
               <Button
                 className={styles.inviteButton}
-                icon={isInviteLoading ? <Spinner /> : <PlusIcon />}
-                disabled={isInviteLoading}
+                icon={updateGroupAccess.isPending ? <Spinner /> : <PlusIcon />}
+                disabled={updateGroupAccess.isPending}
               >
                 Invite
               </Button>
@@ -96,9 +79,9 @@ export function ShareDialogInviteGroup({
               All of your groups have already been added.
             </div>
           )}
-          {errorMessage && (
+          {updateGroupAccess.error && (
             <div className={clsx(styles.error, styles.inviteFormMessage)}>
-              {errorMessage}
+              {updateGroupAccess.error.message}
             </div>
           )}
         </>

@@ -1,11 +1,11 @@
 import clsx from "clsx";
-import { ComponentProps, FormEvent, useState } from "react";
+import { ComponentProps, FormEvent } from "react";
 import { PlusIcon } from "../../icons";
-import { updateUserAccess } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Input } from "../../primitives/Input";
 import { Spinner } from "../../primitives/Spinner";
-import { Document, DocumentAccess, DocumentUser } from "../../types";
+import { Document, DocumentAccess } from "../../types";
+import { trpc } from "../../utils/trpc";
 import styles from "./ShareDialogInvite.module.css";
 
 interface Props extends ComponentProps<"div"> {
@@ -21,29 +21,9 @@ export function ShareDialogInviteUser({
   className,
   ...props
 }: Props) {
-  const [isInviteLoading, setInviteLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
-
-  // Add a user to the room using email as user id
-  async function handleAddDocumentUser(id: DocumentUser["id"]) {
-    setErrorMessage(undefined);
-    setInviteLoading(true);
-
-    const { error } = await updateUserAccess({
-      userId: id,
-      documentId: documentId,
-      access: DocumentAccess.READONLY,
-    });
-
-    setInviteLoading(false);
-
-    if (error) {
-      setErrorMessage(error?.suggestion);
-      return;
-    }
-
-    onSetUsers();
-  }
+  const updateUserAccess = trpc.updateUserAccess.useMutation({
+    onSuccess: () => onSetUsers(),
+  });
 
   return (
     <div className={clsx(className, styles.section)} {...props}>
@@ -54,12 +34,16 @@ export function ShareDialogInviteUser({
             onSubmit={(e: FormEvent<HTMLFormElement>) => {
               e.preventDefault();
               const id = new FormData(e.currentTarget).get("userId") as string;
-              handleAddDocumentUser(id);
+              updateUserAccess.mutate({
+                userId: id,
+                documentId: documentId,
+                access: DocumentAccess.READONLY,
+              });
             }}
           >
             <Input
               className={styles.inviteInput}
-              disabled={isInviteLoading}
+              disabled={updateUserAccess.isPending}
               name="userId"
               placeholder="Email address"
               required
@@ -67,15 +51,15 @@ export function ShareDialogInviteUser({
             />
             <Button
               className={styles.inviteButton}
-              disabled={isInviteLoading}
-              icon={isInviteLoading ? <Spinner /> : <PlusIcon />}
+              disabled={updateUserAccess.isPending}
+              icon={updateUserAccess.isPending ? <Spinner /> : <PlusIcon />}
             >
               Invite
             </Button>
           </form>
-          {errorMessage && (
+          {updateUserAccess.error && (
             <div className={clsx(styles.error, styles.inviteFormMessage)}>
-              {errorMessage}
+              {updateUserAccess.error.message}
             </div>
           )}
         </>
