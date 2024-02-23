@@ -1,7 +1,6 @@
 export * from "./createDocument";
 export * from "./deleteDocument";
 export * from "./getDocument";
-export * from "./getLiveUsers";
 export * from "./getSpecificDocuments";
 export * from "./removeGroupAccess";
 export * from "./removeUserAccess";
