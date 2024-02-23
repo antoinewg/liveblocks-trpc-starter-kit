@@ -1,90 +1,112 @@
-import {
-  Document,
-  DocumentAccess,
-  DocumentGroup,
-  DocumentType,
-  DocumentUser,
-} from "./document";
+import { z } from "zod";
+import { DocumentAccess } from "./document";
 
 /**
  * These types are the properties used in:
- * `/lib/client/documents/`
  * `/lib/server/documents/`
  */
 
-export type CreateDocumentProps = {
-  name: Document["name"];
-  type: DocumentType;
-  userId: DocumentUser["id"];
-  groupIds?: DocumentGroup["id"][];
-  draft?: boolean;
-};
+export const CreateDocumentSchema = z.object({
+  name: z.string(),
+  type: z.enum(["text", "whiteboard", "spreadsheet"]),
+  userId: z.string(),
+  groupIds: z.array(z.string()).optional(),
+  draft: z.boolean().optional(),
+});
 
-export type GetDocumentProps = {
-  documentId: Document["id"];
-};
+export type CreateDocumentProps = z.infer<typeof CreateDocumentSchema>;
 
-export type UpdateDocumentProps = {
-  documentId: Document["id"];
-  documentData: Record<string, any>;
-};
+export const GetDocumentSchema = z.object({ documentId: z.string() });
+export type GetDocumentProps = z.infer<typeof GetDocumentSchema>;
 
-export type UpdateDefaultAccessProps = {
-  documentId: Document["id"];
-  access: DocumentAccess;
-};
+export const UpdateDocumentSchema = z.object({
+  documentId: z.string(),
+  name: z.string(),
+});
+export type UpdateDocumentProps = z.infer<typeof UpdateDocumentSchema>;
 
-export type GetDocumentGroupsProps = {
-  documentId: Document["id"];
-};
+export const UpdateDefaultAccessSchema = z.object({
+  documentId: z.string(),
+  access: z.enum([
+    DocumentAccess.EDIT,
+    DocumentAccess.FULL,
+    DocumentAccess.NONE,
+    DocumentAccess.READONLY,
+  ]),
+});
+export type UpdateDefaultAccessProps = z.infer<
+  typeof UpdateDefaultAccessSchema
+>;
 
-export type UpdateGroupAccessProps = {
-  groupId: DocumentGroup["id"];
-  documentId: Document["id"];
-  access: DocumentAccess;
-};
+export const GetGroupsSchema = z
+  .object({ groupIds: z.array(z.string()) })
+  .optional();
+export type GetGroupsProps = z.infer<typeof GetGroupsSchema>;
 
-export type RemoveGroupAccessProps = {
-  groupId: DocumentGroup["id"];
-  documentId: Document["id"];
-};
+export const GetDocumentGroupsSchema = z.object({ documentId: z.string() });
+export type GetDocumentGroupsProps = z.infer<typeof GetDocumentGroupsSchema>;
 
-export type GetDocumentUsersProps = {
-  documentId: Document["id"];
-};
+export const UpdateGroupAccessSchema = z.object({
+  documentId: z.string(),
+  groupId: z.string(),
+  access: z.enum([
+    DocumentAccess.EDIT,
+    DocumentAccess.FULL,
+    DocumentAccess.NONE,
+    DocumentAccess.READONLY,
+  ]),
+});
+export type UpdateGroupAccessProps = z.infer<typeof UpdateGroupAccessSchema>;
 
-export type UpdateUserAccessProps = {
-  userId: DocumentUser["id"];
-  documentId: Document["id"];
-  access: DocumentAccess;
-};
+export const RemoveGroupAccessSchema = z.object({
+  documentId: z.string(),
+  groupId: z.string(),
+});
+export type RemoveGroupAccessProps = z.infer<typeof RemoveGroupAccessSchema>;
 
-export type RemoveUserAccessProps = {
-  userId: DocumentUser["id"];
-  documentId: Document["id"];
-};
+export const GetDocumentUsersSchema = z.object({ documentId: z.string() });
+export type GetDocumentUsersProps = z.infer<typeof GetDocumentUsersSchema>;
 
-export type GetDocumentsProps = {
-  groupIds?: DocumentGroup["id"][];
-  userId?: DocumentUser["id"];
-  documentType?: DocumentType;
-  drafts?: boolean;
-  limit?: number;
-};
+export const UpdateUserAccessSchema = z.object({
+  documentId: z.string(),
+  userId: z.string(),
+  access: z.enum([
+    DocumentAccess.EDIT,
+    DocumentAccess.FULL,
+    DocumentAccess.NONE,
+    DocumentAccess.READONLY,
+  ]),
+});
+export type UpdateUserAccessProps = z.infer<typeof UpdateUserAccessSchema>;
 
-export type GetLiveUsersProps = {
-  documentIds: Document["id"][];
-};
+export const RemoveUserAccessSchema = z.object({
+  documentId: z.string(),
+  userId: z.string(),
+});
+export type RemoveUserAccessProps = z.infer<typeof RemoveUserAccessSchema>;
 
-export type GetNextDocumentsProps = {
-  nextPage: string;
-};
+export const GetDocumentsSchema = z.object({
+  groupIds: z.array(z.string()).optional(),
+  userId: z.string().optional(),
+  documentType: z.enum(["text", "whiteboard", "spreadsheet"]).optional(),
+  drafts: z.boolean().optional(),
+  limit: z.number().optional(),
+});
+export type GetDocumentsProps = z.infer<typeof GetDocumentsSchema>;
 
-export type DeleteDocumentProps = {
-  documentId: Document["id"];
-};
+export const GetLiveUsersSchema = z.object({
+  documentIds: z.array(z.string()),
+});
+export type GetLiveUsersProps = z.infer<typeof GetLiveUsersSchema>;
 
-export type GetUsersProps = {
-  userIds?: Document["id"][];
-  search?: string;
-};
+export const GetNextDocumentsSchema = z.object({ nextPage: z.string() });
+export type GetNextDocumentsProps = z.infer<typeof GetNextDocumentsSchema>;
+
+export const DeleteDocumentSchema = z.object({ documentId: z.string() });
+export type DeleteDocumentProps = z.infer<typeof DeleteDocumentSchema>;
+
+export const GetUsersSchema = z.object({
+  userIds: z.array(z.string()).optional(),
+  search: z.string().optional(),
+});
+export type GetUsersProps = z.infer<typeof GetUsersSchema>;
