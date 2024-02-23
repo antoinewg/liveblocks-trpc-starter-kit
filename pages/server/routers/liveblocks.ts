@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   createDocument,
+  deleteDocument,
   getDocument,
   getDocumentGroups,
   getDocumentUsers,
@@ -84,6 +85,17 @@ export const liveblocksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const { data, error } = await createDocument(ctx.session, input);
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
+
+  deleteDocument: procedure
+    .input(z.object({ documentId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data, error } = await deleteDocument(ctx.session, input);
       if (error) {
         console.error(error.message);
         throw error;

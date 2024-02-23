@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
-  deleteDocument,
   getDocument,
   getServerSession,
   updateDocument,
@@ -60,32 +59,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(data);
 }
 
-/**
- * DELETE Document - Used in /lib/client/deleteDocument.ts
- *
- * Delete a document
- * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
- * Do not allow if public access, or access granted through groupIds
- *
- * @param req
- * @param req.query.documentId - The document's id
- * @param res
- */
-async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-  const documentId = req.query.documentId as string;
-
-  const session = await getServerSession(req, res);
-  const { data, error } = await deleteDocument(session, {
-    documentId,
-  });
-
-  if (error) {
-    return res.status(error.code ?? 500).json({ error });
-  }
-
-  return res.status(200).json(data);
-}
-
 export default async function document(
   req: NextApiRequest,
   res: NextApiResponse
@@ -95,8 +68,6 @@ export default async function document(
       return await GET(req, res);
     case "POST":
       return await POST(req, res);
-    case "DELETE":
-      return await DELETE(req, res);
 
     default:
       return res.status(405).json({

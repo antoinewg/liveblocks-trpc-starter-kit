@@ -1,4 +1,3 @@
-export * from "./deleteDocument";
 export * from "./getDocument";
 export * from "./getSpecificDocuments";
 export * from "./removeGroupAccess";
