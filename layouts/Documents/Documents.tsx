@@ -22,7 +22,7 @@ import { trpc } from "../../utils/trpc";
 import styles from "./Documents.module.css";
 
 // Load `x` documents at a time
-const DOCUMENT_LOAD_LIMIT = 10;
+const DOCUMENT_LOAD_LIMIT = 2;
 
 interface Props extends ComponentProps<"div"> {
   filter?: "all" | "drafts" | "group";

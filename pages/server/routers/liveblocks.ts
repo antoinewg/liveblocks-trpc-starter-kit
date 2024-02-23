@@ -35,7 +35,6 @@ export const liveblocksRouter = router({
     )
     .query(async ({ ctx, input }) => {
       if (input.cursor) {
-        console.log("fetching next page", input.cursor);
         const { data, error } = await Server.getNextDocuments(ctx.session, {
           nextPage: input.cursor,
         });
@@ -55,14 +54,7 @@ export const liveblocksRouter = router({
 
   getLiveUsers: procedure
     .input(z.object({ documentIds: z.array(z.string()) }))
-    .query(async ({ ctx, input }) => {
-      const { data, error } = await Server.getLiveUsers(ctx.session, input);
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .query(({ ctx, input }) => Server.getLiveUsers(ctx.session, input)),
 
   createDocument: procedure
     .input(
@@ -74,50 +66,19 @@ export const liveblocksRouter = router({
         draft: z.boolean().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.createDocument(ctx.session, input);
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) => Server.createDocument(ctx.session, input)),
 
   deleteDocument: procedure
     .input(z.object({ documentId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.deleteDocument(ctx.session, input);
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) => Server.deleteDocument(ctx.session, input)),
 
   removeGroupAccess: procedure
     .input(z.object({ documentId: z.string(), groupId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.removeGroupAccess(
-        ctx.session,
-        input
-      );
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) => Server.removeGroupAccess(ctx.session, input)),
 
   removeUserAccess: procedure
     .input(z.object({ documentId: z.string(), userId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.removeUserAccess(ctx.session, input);
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) => Server.removeUserAccess(ctx.session, input)),
 
   updateGroupAccess: procedure
     .input(
@@ -132,17 +93,7 @@ export const liveblocksRouter = router({
         ]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.updateGroupAccess(
-        ctx.session,
-        input
-      );
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) => Server.updateGroupAccess(ctx.session, input)),
 
   updateUserAccess: procedure
     .input(
@@ -157,18 +108,9 @@ export const liveblocksRouter = router({
         ]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.updateUserAccess(
-        ctx.session,
-        ctx.req.headers.origin,
-        input
-      );
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) =>
+      Server.updateUserAccess(ctx.session, ctx.req.headers.origin, input)
+    ),
 
   updateDefaultAccess: procedure
     .input(
@@ -182,29 +124,16 @@ export const liveblocksRouter = router({
         ]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.updateDefaultAccess(
-        ctx.session,
-        input
-      );
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+    .mutation(({ ctx, input }) =>
+      Server.updateDefaultAccess(ctx.session, input)
+    ),
 
   updateDocument: procedure
     .input(z.object({ documentId: z.string(), name: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { data, error } = await Server.updateDocument(ctx.session, {
+    .mutation(({ ctx, input }) =>
+      Server.updateDocument(ctx.session, {
         documentId: input.documentId,
         documentData: { metadata: { name: input.name } },
-      });
-      if (error) {
-        console.error(error.message);
-        throw error;
-      }
-      return data;
-    }),
+      })
+    ),
 });

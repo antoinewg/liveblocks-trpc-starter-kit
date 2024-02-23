@@ -14,15 +14,17 @@ export const DocumentRowGroup = memo(
     const documentIds = documents.map((doc) => doc.id);
 
     // If documents ids passed, get live users in rooms, refresh every 10s
-    const { data: liveUsers = [] } = trpc.getLiveUsers.useQuery(
+    const { data } = trpc.getLiveUsers.useQuery(
       { documentIds },
       { refetchInterval: 10000, enabled: documentIds?.length > 0 }
     );
 
+    if (!data || "error" in data) return <></>;
+
     return (
       <>
         {documents.map((document) => {
-          const others = liveUsers.find(
+          const others = data.data.find(
             (user) => user.documentId === document.id
           )?.users;
 

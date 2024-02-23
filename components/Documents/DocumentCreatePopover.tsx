@@ -41,7 +41,8 @@ export function DocumentCreatePopover({
       groupIds: draft ? undefined : groupIds,
     });
 
-    router.push(DOCUMENT_URL(newDocument.type, newDocument.id));
+    if (!newDocument || "error" in newDocument) return;
+    router.push(DOCUMENT_URL(newDocument.data.type, newDocument.data.id));
   }
 
   return (
