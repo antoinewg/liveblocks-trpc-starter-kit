@@ -1,6 +1,6 @@
 import { z } from "zod";
-import * as Server from "../../../lib/server";
-import * as Schema from "../../../types";
+import * as Server from "../../lib/server";
+import * as Schema from "../../types";
 import { procedure, router } from "../trpc";
 
 export const liveblocksRouter = router({
