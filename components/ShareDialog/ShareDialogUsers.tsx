@@ -1,9 +1,10 @@
 import clsx from "clsx";
 import { ComponentProps } from "react";
-import { removeUserAccess, updateUserAccess } from "../../lib/client";
+import { updateUserAccess } from "../../lib/client";
 import { Avatar } from "../../primitives/Avatar";
 import { Select } from "../../primitives/Select";
 import { Document, DocumentAccess, DocumentUser } from "../../types";
+import { trpc } from "../../utils/trpc";
 import styles from "./ShareDialogRows.module.css";
 
 interface Props extends ComponentProps<"div"> {
@@ -23,19 +24,9 @@ export function ShareDialogUsers({
   className,
   ...props
 }: Props) {
-  // Remove a collaborator from the room
-  async function handleRemoveDocumentUser(id: DocumentUser["id"]) {
-    const { data, error } = await removeUserAccess({
-      userId: id,
-      documentId: documentId,
-    });
-
-    if (error || !data) {
-      return;
-    }
-
-    onSetUsers();
-  }
+  const { mutate: removeUserAccess } = trpc.removeUserAccess.useMutation({
+    onSuccess: () => onSetUsers(),
+  });
 
   // Update a collaborator in the room using email as user id
   async function handleUpdateDocumentUser(
@@ -75,7 +66,9 @@ export function ShareDialogUsers({
                   {id !== documentOwner ? (
                     <button
                       className={styles.rowRemoveButton}
-                      onClick={() => handleRemoveDocumentUser(id)}
+                      onClick={() =>
+                        removeUserAccess({ userId: id, documentId })
+                      }
                     >
                       Remove
                     </button>

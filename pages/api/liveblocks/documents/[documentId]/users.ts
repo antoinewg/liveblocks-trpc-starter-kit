@@ -1,10 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  getServerSession,
-  removeUserAccess,
-  updateUserAccess,
-} from "../../../../../lib/server";
-import { RemoveUserRequest, UpdateUserRequest } from "../../../../../types";
+import { getServerSession, updateUserAccess } from "../../../../../lib/server";
+import { UpdateUserRequest } from "../../../../../types";
 
 /**
  * POST Users - User in /lib/client/updateUserAccess.ts
@@ -38,42 +34,10 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(data);
 }
 
-/**
- * PATCH Users - Used in /lib/client/removeUserAccess.ts
- *
- * Remove a collaborator from a document
- * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
- * Do not allow if public access, or access granted through groupIds
- *
- * @param req
- * @param req.query.documentId - The document's id
- * @param req.body - JSON string, as defined below
- * @param req.body.userId - The removed user's id
- * @param res
- */
-async function PATCH(req: NextApiRequest, res: NextApiResponse) {
-  const documentId = req.query.documentId as string;
-  const { userId }: RemoveUserRequest = JSON.parse(req.body);
-
-  const session = await getServerSession(req, res);
-  const { data, error } = await removeUserAccess(session, {
-    documentId,
-    userId,
-  });
-
-  if (error) {
-    return res.status(error.code ?? 500).json({ error });
-  }
-
-  return res.status(200).json(data);
-}
-
 export default async function users(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case "POST":
       return await POST(req, res);
-    case "PATCH":
-      return await PATCH(req, res);
     default:
       return res.status(405).json({
         error: {

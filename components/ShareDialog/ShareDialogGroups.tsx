@@ -1,8 +1,9 @@
 import clsx from "clsx";
 import { ComponentProps } from "react";
-import { removeGroupAccess, updateGroupAccess } from "../../lib/client";
+import { updateGroupAccess } from "../../lib/client";
 import { Select } from "../../primitives/Select";
 import { Document, DocumentAccess, DocumentGroup } from "../../types";
+import { trpc } from "../../utils/trpc";
 import styles from "./ShareDialogRows.module.css";
 
 interface Props extends ComponentProps<"div"> {
@@ -20,19 +21,9 @@ export function ShareDialogGroups({
   className,
   ...props
 }: Props) {
-  // Remove a group from a room
-  async function handleRemoveDocumentGroup(id: DocumentGroup["id"]) {
-    const { data, error } = await removeGroupAccess({
-      groupId: id,
-      documentId: documentId,
-    });
-
-    if (error || !data) {
-      return;
-    }
-
-    onSetGroups();
-  }
+  const { mutate: removeGroupAccess } = trpc.removeGroupAccess.useMutation({
+    onSuccess: () => onSetGroups(),
+  });
 
   // Update a collaborator in the room using email as user id
   async function handleUpdateDocumentGroup(
@@ -62,7 +53,9 @@ export function ShareDialogGroups({
                 {fullAccess ? (
                   <button
                     className={styles.rowRemoveButton}
-                    onClick={() => handleRemoveDocumentGroup(id)}
+                    onClick={() =>
+                      removeGroupAccess({ groupId: id, documentId })
+                    }
                   >
                     Remove
                   </button>

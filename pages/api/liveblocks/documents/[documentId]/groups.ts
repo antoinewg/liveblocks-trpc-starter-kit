@@ -1,10 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  getServerSession,
-  removeGroupAccess,
-  updateGroupAccess,
-} from "../../../../../lib/server";
-import { RemoveGroupRequest, UpdateGroupRequest } from "../../../../../types";
+import { getServerSession, updateGroupAccess } from "../../../../../lib/server";
+import { UpdateGroupRequest } from "../../../../../types";
 
 /**
  * POST Groups - User in /lib/client/updateGroupAccess.ts
@@ -38,36 +34,6 @@ async function POST(req: NextApiRequest, res: NextApiResponse) {
   return res.status(200).json(data);
 }
 
-/**
- * PATCH Groups - Used in /lib/client/removeGroupAccess.ts
- *
- * Remove a group from a document
- * Only allow if authorized with NextAuth and is added as a userId on usersAccesses
- * Do not allow if public access, or access granted through groupIds
- *
- * @param req
- * @param req.query.documentId - The document's id
- * @param req.body - JSON string, as defined below
- * @param req.body.groupId - The removed group's id
- * @param res
- */
-async function PATCH(req: NextApiRequest, res: NextApiResponse) {
-  const documentId = req.query.documentId as string;
-  const { groupId }: RemoveGroupRequest = JSON.parse(req.body);
-
-  const session = await getServerSession(req, res);
-  const { data, error } = await removeGroupAccess(session, {
-    documentId,
-    groupId,
-  });
-
-  if (error) {
-    return res.status(error.code ?? 500).json({ error });
-  }
-
-  return res.status(200).json(data);
-}
-
 export default async function groups(
   req: NextApiRequest,
   res: NextApiResponse
@@ -75,8 +41,6 @@ export default async function groups(
   switch (req.method) {
     case "POST":
       return await POST(req, res);
-    case "PATCH":
-      return await PATCH(req, res);
     default:
       return res.status(405).json({
         error: {

@@ -9,6 +9,8 @@ import {
   getGroups,
   getLiveUsers,
   getNextDocuments,
+  removeGroupAccess,
+  removeUserAccess,
 } from "../../../lib/server";
 import { procedure, router } from "../trpc";
 
@@ -96,6 +98,28 @@ export const liveblocksRouter = router({
     .input(z.object({ documentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { data, error } = await deleteDocument(ctx.session, input);
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
+
+  removeGroupAccess: procedure
+    .input(z.object({ documentId: z.string(), groupId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data, error } = await removeGroupAccess(ctx.session, input);
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
+
+  removeUserAccess: procedure
+    .input(z.object({ documentId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { data, error } = await removeUserAccess(ctx.session, input);
       if (error) {
         console.error(error.message);
         throw error;
