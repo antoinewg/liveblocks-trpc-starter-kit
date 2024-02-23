@@ -4,12 +4,13 @@ import { AuthenticatedLayout } from "../../layouts/Authenticated";
 import { DashboardLayout } from "../../layouts/Dashboard";
 import { DocumentsLayout } from "../../layouts/Documents";
 import * as Server from "../../lib/server";
-import { Group } from "../../types";
+import { trpc } from "../../utils/trpc";
 
 export default function Drafts({
-  groups,
   session,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const { data: groups = [] } = trpc.getGroups.useQuery();
+
   return (
     <AuthenticatedLayout session={session}>
       <DashboardLayout groups={groups}>
@@ -20,7 +21,6 @@ export default function Drafts({
 }
 
 interface ServerSideProps {
-  groups: Group[];
   session: Session;
 }
 
@@ -41,9 +41,7 @@ export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({
     };
   }
 
-  const groups = await Server.getGroups(session?.user.info.groupIds ?? []);
-
   return {
-    props: { groups, session },
+    props: { session },
   };
 };

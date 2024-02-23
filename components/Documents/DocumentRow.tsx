@@ -5,12 +5,13 @@ import { useSession } from "next-auth/react";
 import { ComponentProps, useCallback, useEffect, useState } from "react";
 import { DOCUMENT_URL } from "../../constants";
 import { DeleteIcon, MoreIcon } from "../../icons";
-import { getDocumentAccess, getGroups } from "../../lib/client";
+import { getDocumentAccess } from "../../lib/client";
 import { AvatarStack } from "../../primitives/AvatarStack";
 import { Button } from "../../primitives/Button";
 import { Popover } from "../../primitives/Popover";
 import { Skeleton } from "../../primitives/Skeleton";
-import { Document, DocumentAccess, Group, RoomActiveUser } from "../../types";
+import { Document, DocumentAccess, RoomActiveUser } from "../../types";
+import { trpc } from "../../utils/trpc";
 import { DocumentDeleteDialog } from "./DocumentDeleteDialog";
 import { DocumentIcon } from "./DocumentIcon";
 import styles from "./DocumentRow.module.css";
@@ -29,7 +30,9 @@ export function DocumentRow({
   ...props
 }: Props) {
   const { id, name, type, lastConnection, accesses } = document;
-  const [groups, setGroups] = useState<Group[]>([]);
+  const { data: groups = [] } = trpc.getGroups.useQuery({
+    groupIds: Object.keys(accesses.groups),
+  });
 
   const { data: session } = useSession();
   const [currentUserAccess, setCurrentUserAccess] = useState(
@@ -49,19 +52,6 @@ export function DocumentRow({
     });
     setCurrentUserAccess(access);
   }, [session, accesses]);
-
-  // TODO swap to useSWR if enough time
-  useEffect(() => {
-    getGroupInfo();
-
-    async function getGroupInfo() {
-      const groupIds = Object.keys(accesses.groups);
-      if (groupIds.length) {
-        const groups = await getGroups(groupIds);
-        setGroups(groups);
-      }
-    }
-  }, [document]);
 
   const [isMoreOpen, setMoreOpen] = useState(false);
 

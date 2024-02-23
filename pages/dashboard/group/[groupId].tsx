@@ -5,13 +5,13 @@ import { AuthenticatedLayout } from "../../../layouts/Authenticated";
 import { DashboardLayout } from "../../../layouts/Dashboard";
 import { DocumentsLayout } from "../../../layouts/Documents";
 import * as Server from "../../../lib/server";
-import { Group } from "../../../types";
+import { trpc } from "../../../utils/trpc";
 
 export default function GroupPage({
-  groups,
   session,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const router = useRouter();
+  const { data: groups = [] } = trpc.getGroups.useQuery();
 
   return (
     <AuthenticatedLayout session={session}>
@@ -26,7 +26,6 @@ export default function GroupPage({
 }
 
 interface ServerSideProps {
-  groups: Group[];
   session: Session;
 }
 
@@ -47,9 +46,7 @@ export const getServerSideProps: GetServerSideProps<ServerSideProps> = async ({
     };
   }
 
-  const groups = await Server.getGroups(session?.user.info.groupIds ?? []);
-
   return {
-    props: { groups, session },
+    props: { session },
   };
 };
