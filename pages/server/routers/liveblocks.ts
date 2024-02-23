@@ -5,6 +5,7 @@ import {
   getDocumentUsers,
   getDocuments,
   getGroups,
+  getLiveUsers,
   getNextDocuments,
 } from "../../../lib/server";
 import { procedure, router } from "../trpc";
@@ -52,6 +53,17 @@ export const liveblocksRouter = router({
         return data;
       }
       const { data, error } = await getDocuments(ctx.session, input);
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
+
+  getLiveUsers: procedure
+    .input(z.object({ documentIds: z.array(z.string()) }))
+    .query(async ({ ctx, input }) => {
+      const { data, error } = await getLiveUsers(ctx.session, input);
       if (error) {
         console.error(error.message);
         throw error;

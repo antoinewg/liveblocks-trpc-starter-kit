@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { getLiveUsers, useDocumentsFunctionSWR } from "../../lib/client";
 import { Document } from "../../types";
+import { trpc } from "../../utils/trpc";
 import { DocumentRow } from "./DocumentRow";
 import styles from "../../layouts/Documents/Documents.module.css";
 
@@ -14,14 +14,9 @@ export const DocumentRowGroup = memo(
     const documentIds = documents.map((doc) => doc.id);
 
     // If documents ids passed, get live users in rooms, refresh every 10s
-    const { data: liveUsers = [] } = useDocumentsFunctionSWR(
-      [
-        documentIds?.length ? getLiveUsers : null,
-        {
-          documentIds,
-        },
-      ],
-      { refreshInterval: 10000 }
+    const { data: liveUsers = [] } = trpc.getLiveUsers.useQuery(
+      { documentIds },
+      { refetchInterval: 10000, enabled: documentIds?.length > 0 }
     );
 
     return (
