@@ -1,4 +1,3 @@
-export * from "./createDocument";
 export * from "./deleteDocument";
 export * from "./getDocument";
 export * from "./getSpecificDocuments";

@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import { ComponentProps } from "react";
 import { DOCUMENT_URL } from "../../constants";
 import { PlusIcon } from "../../icons";
-import { createDocument } from "../../lib/client";
 import { Button } from "../../primitives/Button";
 import { Popover } from "../../primitives/Popover";
 import {
@@ -11,6 +10,7 @@ import {
   DocumentType,
   DocumentUser,
 } from "../../types";
+import { trpc } from "../../utils/trpc";
 import styles from "./DocumentCreatePopover.module.css";
 
 interface Props extends Omit<ComponentProps<typeof Popover>, "content"> {
@@ -29,10 +29,11 @@ export function DocumentCreatePopover({
   ...props
 }: Props) {
   const router = useRouter();
+  const { mutateAsync: createDocument } = trpc.createDocument.useMutation();
 
   // Create a new document, then navigate to the document's URL location
   async function createNewDocument(name: string, type: DocumentType) {
-    const { data, error } = await createDocument({
+    const newDocument = await createDocument({
       name: documentName,
       type: type,
       userId: userId,
@@ -40,11 +41,6 @@ export function DocumentCreatePopover({
       groupIds: draft ? undefined : groupIds,
     });
 
-    if (error || !data) {
-      return;
-    }
-
-    const newDocument: Document = data;
     router.push(DOCUMENT_URL(newDocument.type, newDocument.id));
   }
 

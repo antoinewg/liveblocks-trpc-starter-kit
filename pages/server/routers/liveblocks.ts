@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  createDocument,
   getDocument,
   getDocumentGroups,
   getDocumentUsers,
@@ -64,6 +65,25 @@ export const liveblocksRouter = router({
     .input(z.object({ documentIds: z.array(z.string()) }))
     .query(async ({ ctx, input }) => {
       const { data, error } = await getLiveUsers(ctx.session, input);
+      if (error) {
+        console.error(error.message);
+        throw error;
+      }
+      return data;
+    }),
+
+  createDocument: procedure
+    .input(
+      z.object({
+        name: z.string(),
+        type: z.enum(["text", "whiteboard", "spreadsheet"]),
+        userId: z.string(),
+        groupIds: z.array(z.string()).optional(),
+        draft: z.boolean().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { data, error } = await createDocument(ctx.session, input);
       if (error) {
         console.error(error.message);
         throw error;
