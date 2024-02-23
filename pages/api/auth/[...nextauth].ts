@@ -45,8 +45,6 @@ export const authOptions = {
           return null;
         }
 
-        const a = [1, 2];
-
         const user: User | null = await getUser(credentials.email);
 
         if (!user) {

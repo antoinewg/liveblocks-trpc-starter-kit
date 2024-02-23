@@ -15,11 +15,11 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
   const userParam = req.query.userId;
   const searchParam = req.query.search;
 
-  const userIds: string[] | undefined = Array.isArray(userParam)
+  const userIds = Array.isArray(userParam)
     ? userParam
     : userParam
-    ? [userParam]
-    : undefined;
+      ? [userParam]
+      : undefined;
   const search: string | undefined = Array.isArray(searchParam)
     ? searchParam[0]
     : searchParam;

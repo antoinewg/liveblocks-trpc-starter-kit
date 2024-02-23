@@ -34,6 +34,7 @@ export async function notify({
   html,
 }: NotifyProps): Promise<boolean> {
   const msg = { to, from, subject, text, html };
+  console.log(msg);
 
   // Send email message
   // @sendgrid/mail example:
